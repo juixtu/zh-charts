@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appname }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicas }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      name: {{ .Values.appname }}
+    spec:
+      containers:
+      - command:
+        - java
+        - -javaagent:/apm-agent/apm-all.jar
+        - -Djava.security.egd=file:/dev/./urandom
+        - -jar
+        - /app.jar
+        env:
+        - name: aliyun_logs_logPlatform
+          value: stdout
+        - name: aliyun_logs_logPlatform_tags
+          value: masterIp=msa_chj_rancher,app_name={{ .Values.appname }},log_type=app,env_type=k8s
+        - name: TZ
+          value: Asia/Shanghai
+        image: harbor.d.sh.bank-of-china.com/{{ .Values.project }}/{{ .Values.appname }}:{{ .Values.tag }}
+        imagePullPolicy: IfNotPresent
+        name: {{ .Values.appname }}
+        resources:
+          limits:
+            cpu: "5"
+            memory: 2Gi
+          requests:
+            cpu: 500m
+            memory: 2Gi
+        volumeMounts:
+        - mountPath: /config
+          name: settings
+        - mountPath: /apm-agent
+          name: apm-volume
+        {{- if .Values.pvc.name }}
+        - mountPath: {{ .Values.pvc.path }}
+          name: pvc-stor
+        {{- end }}
+      dnsPolicy: ClusterFirst
+      initContainers:
+      - args:
+        - -c
+        - |
+          cp -r /apm/* /apm-agent/
+          sed -i "s/application_name=application/application_name={{ .Values.appname }}/g" /apm-agent/apm.properties
+          sed -i "s/masterIp=yanshi_default_default/masterIp=msa_chj_rancher/g" /apm-agent/apm.properties
+          sed -i "s/xieyun-yyfx/appops/g" /apm-agent/apm.properties
+        command:
+        - sh
+        image: harbor.d.sh.bank-of-china.com/xy-yyfx/apm-agent:2.9.8.3.1
+        imagePullPolicy: IfNotPresent
+        name: init-agent
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        volumeMounts:
+        - mountPath: /apm-agent
+          name: apm-volume
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          name: {{ .Values.appname }}
+        name: settings
+      - emptyDir: {}
+        name: apm-volume
+      {{- if .Values.pvc.name }}
+      - name: pvc-stor
+        persistentVolumeClaim:
+          claimName: {{ .Values.pvc.name }}
+      {{- end }}

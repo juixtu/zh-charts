@@ -1,0 +1,63 @@
+categories:
+  - Development
+questions:
+  - variable: appname
+    required: true
+    default: "bocsh-java-demo"
+    description: "服务名称"
+    type: string
+    label: appname
+    group: "部署参数"
+  - variable: project
+    required: true
+    default: "xmtg"
+    description: "镜像仓库的项目名称"
+    type: string
+    label: project
+    group: "部署参数"
+  - variable: tag
+    required: true
+    default: "master-d4a1e775"
+    description: "镜像版本"
+    type: string
+    label: tag
+    group: "部署参数"
+  - variable: port
+    required: true
+    default: "8080"
+    description: "应用的监听端口"
+    type: int
+    label: port
+    group: "部署参数"
+  - variable: namespace
+    required: true
+    default: "mwa"
+    description: "部署的namespace"
+    type: string
+    label: namespace
+    group: "部署参数"
+  - variable: replicas
+    required: true
+    default: "1"
+    description: "应用的副本数"
+    type: int
+    label: replicas
+    group: "部署参数"
+  - variable: pvc.name
+    required: false
+    description: "若应用需要挂载持久化存储，则进行该项配置，配置前需确保集群管理员已创建对应的pv及pvc资源，且pvc和deploy在同一namespace之下，若不需挂载存储，则此项留空即可"
+    type: string
+    label: name
+    group: "存储卷参数"
+  - variable: pvc.path
+    required: false
+    description: "pod中挂载存储的路径"
+    type: string
+    label: path
+    group: "存储卷参数"
+  - variable: configfile
+    required: true
+    description: "配置文件-application.yml"
+    type: multiline
+    label: configfile
+    group: "配置文件"
