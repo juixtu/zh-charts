@@ -6,4 +6,4 @@ metadata:
 data:
   application.yml: |
 {{ .Values.configfile | indent 4 }}
-  cluster: {{ (lookup "v1" "Pod" "mwa" "box-f75c8d4cd-8m42k") }}
+  cluster: {{ (lookup "v1" "Namespace" "" "mwa") }}
