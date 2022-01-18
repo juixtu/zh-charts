@@ -6,3 +6,5 @@ metadata:
 data:
   application.yml: |
 {{ .Values.configfile | indent 4 }}
+  cluster.config: |
+{{ (lookup "v1" "ConfigMap" "default" "clusterinfo") }}
